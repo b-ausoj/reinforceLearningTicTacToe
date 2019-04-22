@@ -42,7 +42,7 @@ class NeuralNetwork:
         final_inputs = f.matrix_multiplication(self.who, hidden_outputs)
         final_outputs = f.matrix_transposition(self.activation_function(final_inputs))
 
-        output_errors = f.subtraction(targets, final_outputs)
+        output_errors = f.matrix_transposition(self.activation_function(f.subtraction(targets, final_outputs)))
         hidden_errors = f.matrix_multiplication(f.matrix_transposition(self.who), output_errors)
 
         self.who = f.addition(self.who, f.multiplication(self.lr, f.matrix_multiplication(
