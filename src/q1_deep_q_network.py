@@ -95,8 +95,6 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate
                 board = e.change_board(board_next)
                 turn = "agent_1"
 
-            print(board)
-
         epsilon = max(epsilon_end, epsilon * epsilon_decay)
 
     agent_1.policy_network.save_weights()
@@ -111,8 +109,8 @@ Batch_size = 10  # Anzahl Beispiele, die aufs Mal trainiert werden
 Nodes = 9, 27, 9  # Anzahl Knoten, momentan nur 3 Schichten
 Learning_rate = 0.01
 Discount_factor = 0.9
-Saving_weights_1 = "new", "../learned_data/nn_weights_agent1.pkl"  # Gewichte für Agent 1
-Saving_weights_2 = "new", "../learned_data/nn_weights_agent2.pkl"  # Gewichte für Agent 2
+Saving_weights_1 = "old", "../learned_data/nn_weights_agent1.pkl"  # Gewichte für Agent 1
+Saving_weights_2 = "old", "../learned_data/nn_weights_agent2.pkl"  # Gewichte für Agent 2
 
 # diese werte können/müssen noch verändert werden
 
