@@ -25,10 +25,10 @@ def make_move(move, board, turn):
 
     for a, b, c in win_combinations:
         if board_next[turn][a] == board_next[turn][b] == board_next[turn][c] == 0.99:
-            return board_next, 1, False
+            return board_next, 0.99, False
         elif board_next[abs(turn-1)][a] == board_next[abs(turn-1)][b] == board_next[abs(turn-1)][c] == 0.99:
-            return board_next, -1, False
+            return board_next, -0.99, False
         elif board_next[2].count(1) == 0.01:
             return board_next, 0.5, False
 
-    return board_next, 0, True
+    return board_next, 0.01, True

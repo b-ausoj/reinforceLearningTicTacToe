@@ -4,7 +4,7 @@ import random
 from src import a1_agent as a, e1_environment as e
 
 
-def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate, discount_factor, saving1, saving2):
+def dqn(episodes, epsilons, replay_memory_size, batch_size, update_every, nodes, learning_rate, discount_factor, saving1, saving2):
 
     epsilon_start, epsilon_end, epsilon_decay = epsilons
 
@@ -45,12 +45,12 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate
                 if episode > 100:  # Auch noch etwas, was man ändern könnte, aber glaubs nicht viel ausmacht
                     for i in range(batch_size):
                         e_board, e_move, e_reward, e_board_next = random.choice(replay_memory_1)
-                        q_values = agent_1.query_board(e_board)
+                        q_values = agent_1.policy_network.query(e_board)
                         # q_value_output = q_values[e_move]
                         if not e_board_next:
                             q_value_target = e_reward
                         else:
-                            q_value_target = e_reward + discount_factor * max(agent_1.query_board(e_board_next))  # noch nicht mit target network, muss das noch machen wie beim letzten schritt der anleitung
+                            q_value_target = e_reward + discount_factor * max(agent_1.target_network.query(e_board_next))
                         # output_error = [0, 0, 0, 0, 0, 0, 0, 0, 0]
                         # output_error[e_move] = q_value_target - q_value_output  # braucht es nicht wegen backprop. im neural_network.py, wenn gradient descent wie im tutorial beschireben, würde ichs brauchen
                         q_values[e_move] = q_value_target
@@ -85,11 +85,11 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate
                 if episode > 100:
                     for i in range(batch_size):
                         e_board, e_move, e_reward, e_board_next = random.choice(replay_memory_2)
-                        q_values = agent_2.query_board(e_board)
+                        q_values = agent_2.policy_network.query(e_board)
                         if not e_board_next:
                             q_value_target = e_reward
                         else:
-                            q_value_target = e_reward + discount_factor * max(agent_2.query_board(e_board_next))
+                            q_value_target = e_reward + discount_factor * max(agent_2.target_network.query(e_board_next))
                         q_values[e_move] = q_value_target
                         agent_2.learn(e_board, q_values)
 
@@ -98,32 +98,34 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate
                 turn = "agent_1"
 
         epsilon = max(epsilon_end, epsilon * epsilon_decay)
+        agent_1.update_target_network(episode, update_every), agent_2.update_target_network(episode, update_every)
+        if (episode % 1000) == 0:
+            agent_1.policy_network.save_weights(), agent_2.policy_network.save_weights()
 
-    agent_1.policy_network.save_weights()
-    agent_2.policy_network.save_weights()
-    # am ende aller episoden, alle gewichte, und vielleicht auch replaymemory speichern
 
-
-Episodes = 10000
+Episodes = 200000
 Epsilons = 1.0, 0.01, 0.95  # epsilon: (start, end, decay)
-Replay_memory_size = 1000  # Anzahl an Spielbeispielen, mit denen Trainiert wird
+Replay_memory_size = 10000  # Anzahl an Spielbeispielen, mit denen Trainiert wird
 Batch_size = 10  # Anzahl Beispiele, die aufs Mal trainiert werden
+Update_every = 5  # Target Network updating
 Nodes = 27, 81, 81, 27, 9  # Anzahl Knoten, momentan 5 Schichten, erste Schicht muss 27 sein, letzte 9
 Learning_rate = 0.01
 Discount_factor = 0.9
-Saving_weights_1 = "new", "../learned_data/nn_weights_agent1.pkl"  # Gewichte für Agent 1
-Saving_weights_2 = "new", "../learned_data/nn_weights_agent2.pkl"  # Gewichte für Agent 2
+Saving_weights_1 = "old", "../learned_data/nn_weights_agent1.pkl"  # Gewichte für Agent 1
+Saving_weights_2 = "old", "../learned_data/nn_weights_agent2.pkl"  # Gewichte für Agent 2
 
 # diese werte können/müssen noch verändert werden
 
-dqn(Episodes, Epsilons, Replay_memory_size, Batch_size, Nodes, Learning_rate, Discount_factor, Saving_weights_1, Saving_weights_2)
-abc = a.Agent(Nodes,Learning_rate,Saving_weights_2)
-print(abc.query_board([[0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01], [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01], [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]]))
-abc.policy_network.save_weights()
+dqn(Episodes, Epsilons, Replay_memory_size, Batch_size, Update_every, Nodes, Learning_rate, Discount_factor, Saving_weights_1, Saving_weights_2)
+
+# test = a.Agent(Nodes, Learning_rate, Saving_weights_1)
+# print(test.policy_network.query([[0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
+#                                  [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
+#                                  [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]]))
 
 # Leeres Brett darf nicht 0, 0 ... sein, neuronale Netz gibt sonst keinen Output
 # Input mit min 18 nodes, also für x 9 und für o 9, vielleicht auch 9 für die leeren felder (leer = 1)
-# mehr hidden layers
+# das batch learning ist noch nicht das richtige batch learning (maches falsch)
 # clone netzwerk
 # gewichtsänderung muss vielleicht auch überarbeitet werden
 # idee:das netz soll gegen einen clone von sich selbst spielen

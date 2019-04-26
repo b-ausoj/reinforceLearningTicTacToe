@@ -1,5 +1,6 @@
 from src import neural_network as n
 import random
+import copy
 # The agent
 
 
@@ -8,10 +9,14 @@ class Agent:
     def __init__(self, nodes, learningrate, saving):
         inputnodes, hiddennodes1, hiddennodes2, hiddennodes3, outputnodes = nodes
         old_or_new, memory_l = saving
-        self.policy_network = n.NeuralNetwork(inputnodes, hiddennodes1, hiddennodes2, hiddennodes3, outputnodes, learningrate, old_or_new, memory_l)
 
-    def query_board(self, board):
-        return self.policy_network.query(board)
+        self.policy_network = n.NeuralNetwork(inputnodes, hiddennodes1, hiddennodes2, hiddennodes3, outputnodes, learningrate, old_or_new, memory_l)
+        self.target_network = copy.deepcopy(self.policy_network)
+
+    def update_target_network(self, episode, update_every):
+        if episode > 100:
+            if (episode % update_every) == 0:
+                self.target_network = copy.deepcopy(self.policy_network)
 
     def learn(self, inputlist, targetlist):
         self.policy_network.train(inputlist, targetlist)
