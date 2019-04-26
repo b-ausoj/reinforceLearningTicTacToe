@@ -26,7 +26,7 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate
             if turn == "agent_1":
 
                 move = agent_1.choose_move(board, epsilon)
-                board_next, reward, game_playing = e.make_move(move, board, 1)
+                board_next, reward, game_playing = e.make_move(move, board, 0)
                 # falsch:(die bestrafung gibt es erst beim lernen, wenn der loss ausgerechnet wird)
                 # wenn ein falscher move, dann game_playing = false und board_next ebenfals = false
                 # beim lernen: zuerst schauen, ob board_next = false ist, dann kein max q_next
@@ -36,7 +36,7 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate
                     replay_memory_1.append([board, move, reward, board_next])
 
                 else:
-                    board_next_e, reward, useless = e.make_move(agent_2.choose_move_passive(board_next), board_next, -1)
+                    board_next_e, reward, useless = e.make_move(agent_2.choose_move_passive(board_next), board_next, 1)
                     replay_memory_1.append([board, move, reward, board_next_e])
 
                 if len(replay_memory_1) > replay_memory_size:
@@ -59,7 +59,8 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate
                 # now the learning from the replay memory comes
                     # beim lernen muss das mit dem target network clone gemacht werden
 
-                board = e.change_board(board_next)
+                if board_next != False:  # muss so sein
+                    board = list(board_next)
                 turn = "agent_2"
 
             else:
@@ -75,7 +76,7 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate
                     replay_memory_2.append([board, move, reward, board_next])
 
                 else:
-                    board_next_e, reward, useless = e.make_move(agent_1.choose_move_passive(board_next), board_next, -1)
+                    board_next_e, reward, useless = e.make_move(agent_1.choose_move_passive(board_next), board_next, 0)
                     replay_memory_2.append([board, move, reward, board_next_e])
 
                 if len(replay_memory_2) > replay_memory_size:
@@ -92,7 +93,8 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, nodes, learning_rate
                         q_values[e_move] = q_value_target
                         agent_2.learn(e_board, q_values)
 
-                board = e.change_board(board_next)
+                if board_next != False:  # muss so sein
+                    board = list(board_next)
                 turn = "agent_1"
 
         epsilon = max(epsilon_end, epsilon * epsilon_decay)
@@ -106,12 +108,22 @@ Episodes = 10000
 Epsilons = 1.0, 0.01, 0.95  # epsilon: (start, end, decay)
 Replay_memory_size = 1000  # Anzahl an Spielbeispielen, mit denen Trainiert wird
 Batch_size = 10  # Anzahl Beispiele, die aufs Mal trainiert werden
-Nodes = 9, 27, 9  # Anzahl Knoten, momentan nur 3 Schichten
+Nodes = 27, 81, 81, 27, 9  # Anzahl Knoten, momentan 5 Schichten, erste Schicht muss 27 sein, letzte 9
 Learning_rate = 0.01
 Discount_factor = 0.9
-Saving_weights_1 = "old", "../learned_data/nn_weights_agent1.pkl"  # Gewichte für Agent 1
-Saving_weights_2 = "old", "../learned_data/nn_weights_agent2.pkl"  # Gewichte für Agent 2
+Saving_weights_1 = "new", "../learned_data/nn_weights_agent1.pkl"  # Gewichte für Agent 1
+Saving_weights_2 = "new", "../learned_data/nn_weights_agent2.pkl"  # Gewichte für Agent 2
 
 # diese werte können/müssen noch verändert werden
 
 dqn(Episodes, Epsilons, Replay_memory_size, Batch_size, Nodes, Learning_rate, Discount_factor, Saving_weights_1, Saving_weights_2)
+abc = a.Agent(Nodes,Learning_rate,Saving_weights_2)
+print(abc.query_board([[0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01], [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01], [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]]))
+abc.policy_network.save_weights()
+
+# Leeres Brett darf nicht 0, 0 ... sein, neuronale Netz gibt sonst keinen Output
+# Input mit min 18 nodes, also für x 9 und für o 9, vielleicht auch 9 für die leeren felder (leer = 1)
+# mehr hidden layers
+# clone netzwerk
+# gewichtsänderung muss vielleicht auch überarbeitet werden
+# idee:das netz soll gegen einen clone von sich selbst spielen

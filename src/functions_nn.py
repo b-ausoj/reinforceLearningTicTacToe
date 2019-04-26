@@ -23,7 +23,6 @@ def tangens_hyperbolicus(argument):
         for i in range(len(argument)):
             for j in range(len(argument[0])):
                 argument[i][j] = 1 - (2 / (1 + e ** (2 * argument[i][j])))
-        argument = matrix_transposition(argument)
         return argument
     elif isinstance(argument, float):
         argument = 1 - (2 / (1 + e ** (2 * argument)))
@@ -32,8 +31,11 @@ def tangens_hyperbolicus(argument):
 
 # numpy.array (not finished)
 def list_to_matrix(input_list):
-    input_list = [input_list]
-    return input_list
+    return_list = []
+    for i in range(3):
+        for j in range(9):
+            return_list.append(input_list[i][j])
+    return [return_list]
 
 
 # numpy.transpose
