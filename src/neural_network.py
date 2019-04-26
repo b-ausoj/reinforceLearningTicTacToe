@@ -52,7 +52,7 @@ class NeuralNetwork:
         final_inputs = f.matrix_multiplication(self.wh3o, hidden_outputs_3)
         final_outputs = self.activation_function(final_inputs)
 
-        output_errors = f.subtraction(targets, final_outputs)
+        output_errors = self.activation_function(f.subtraction(targets, final_outputs))
         hidden_errors_3 = f.matrix_multiplication(f.matrix_transposition(self.wh3o), output_errors)
         hidden_errors_2 = f.matrix_multiplication(f.matrix_transposition(self.wh2h3), hidden_errors_3)
         hidden_errors_1 = f.matrix_multiplication(f.matrix_transposition(self.wh1h2), hidden_errors_2)
