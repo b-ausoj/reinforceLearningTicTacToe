@@ -104,7 +104,7 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, update_every, pre_tr
 
 
 # diese werte können/müssen noch verändert werden
-Episodes = 100000
+Episodes = 10000
 Epsilons = 1.0, 0.01, 0.95  # epsilon: (start, end, decay)
 Replay_memory_size = 10000  # Anzahl an Spielbeispielen, mit denen Trainiert wird
 Batch_size = 10  # Anzahl Beispiele, die aufs Mal trainiert werden
