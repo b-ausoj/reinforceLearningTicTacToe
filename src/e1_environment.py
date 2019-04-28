@@ -28,8 +28,8 @@ def make_move(move, board, turn):
         if board_next_e[turn][a] == board_next_e[turn][b] == board_next_e[turn][c] == 0.99:
             return board_next_e, 0.99, False
         elif board_next_e[abs(turn-1)][a] == board_next_e[abs(turn-1)][b] == board_next_e[abs(turn-1)][c] == 0.99:
-            return board_next_e, -0.99, False
+            return board_next_e, 0.01, False
         elif board_next_e[2].count(0.99) == 0:
-            return board_next_e, 0.5, False
+            return board_next_e, 0.89, False
 
-    return board_next_e, 0.01, True
+    return board_next_e, 0.09, True
