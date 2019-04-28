@@ -4,7 +4,7 @@ import random
 from src import a1_agent as a, e1_environment as e
 
 
-def dqn(episodes, epsilons, replay_memory_size, batch_size, update_every, nodes, learning_rate, discount_factor, saving1, saving2):
+def dqn(episodes, epsilons, replay_memory_size, batch_size, update_every, pre_trained_games, nodes, learning_rate, discount_factor, saving1, saving2):
 
     epsilon_start, epsilon_end, epsilon_decay = epsilons
 
@@ -42,7 +42,7 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, update_every, nodes,
                 if len(replay_memory_1) > replay_memory_size:
                     replay_memory_1.pop(0)
 
-                if episode > 100:  # Auch noch etwas, was man ändern könnte, aber glaubs nicht viel ausmacht
+                if episode > pre_trained_games:  # Auch noch etwas, was man ändern könnte, aber glaubs nicht viel ausmacht
                     for i in range(batch_size):
                         e_board, e_move, e_reward, e_board_next = random.choice(replay_memory_1)
                         q_values = agent_1.policy_network.query(e_board)
@@ -82,7 +82,7 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, update_every, nodes,
                 if len(replay_memory_2) > replay_memory_size:
                     replay_memory_2.pop(0)
 
-                if episode > 100:
+                if episode > pre_trained_games:
                     for i in range(batch_size):
                         e_board, e_move, e_reward, e_board_next = random.choice(replay_memory_2)
                         q_values = agent_2.policy_network.query(e_board)
@@ -103,25 +103,20 @@ def dqn(episodes, epsilons, replay_memory_size, batch_size, update_every, nodes,
             agent_1.policy_network.save_weights(), agent_2.policy_network.save_weights()
 
 
-Episodes = 200000
+# diese werte können/müssen noch verändert werden
+Episodes = 100000
 Epsilons = 1.0, 0.01, 0.95  # epsilon: (start, end, decay)
 Replay_memory_size = 10000  # Anzahl an Spielbeispielen, mit denen Trainiert wird
 Batch_size = 10  # Anzahl Beispiele, die aufs Mal trainiert werden
 Update_every = 5  # Target Network updating
+Pre_trained_games = 100
 Nodes = 27, 81, 81, 27, 9  # Anzahl Knoten, momentan 5 Schichten, erste Schicht muss 27 sein, letzte 9
 Learning_rate = 0.01
 Discount_factor = 0.9
-Saving_weights_1 = "old", "../learned_data/nn_weights_agent1.pkl"  # Gewichte für Agent 1
-Saving_weights_2 = "old", "../learned_data/nn_weights_agent2.pkl"  # Gewichte für Agent 2
+Saving_weights_1 = "new", "../learned_data/nn_weights_agent1.pkl"  # Gewichte für Agent 1
+Saving_weights_2 = "new", "../learned_data/nn_weights_agent2.pkl"  # Gewichte für Agent 2
 
-# diese werte können/müssen noch verändert werden
-
-dqn(Episodes, Epsilons, Replay_memory_size, Batch_size, Update_every, Nodes, Learning_rate, Discount_factor, Saving_weights_1, Saving_weights_2)
-
-# test = a.Agent(Nodes, Learning_rate, Saving_weights_1)
-# print(test.policy_network.query([[0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
-#                                  [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01],
-#                                  [0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99, 0.99]]))
+dqn(Episodes, Epsilons, Replay_memory_size, Batch_size, Update_every, Pre_trained_games, Nodes, Learning_rate, Discount_factor, Saving_weights_1, Saving_weights_2)
 
 # Leeres Brett darf nicht 0, 0 ... sein, neuronale Netz gibt sonst keinen Output
 # Input mit min 18 nodes, also für x 9 und für o 9, vielleicht auch 9 für die leeren felder (leer = 1)
